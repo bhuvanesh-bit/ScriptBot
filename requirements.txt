@@ -4,4 +4,6 @@ openai
 python-dotenv
 mysql-connector-python
 langchain-community
+langchain-openai
+
 
