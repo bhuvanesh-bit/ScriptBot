@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables and secret keys
+.env
+.env.*
+secrets.toml
+
+# Python virtual environments
+venv/
+.venv/
+
+# Streamlit cache
+.streamlit/config.toml
+.streamlit/*.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# VSCode settings
+.vscode/
+
+# PyInstaller
+*.spec
+dist/
+build/
+
+# MySQL dumps or logs
+*.sql
+*.log
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Ignore compiled shared libraries
+*.so
