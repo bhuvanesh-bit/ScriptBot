@@ -5,6 +5,7 @@ from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 import mysql.connector
 import hashlib
+from PIL import Image
 
 # Load environment variables
 load_dotenv()
@@ -173,7 +174,6 @@ def login_register_section():
                     st.session_state.username = username
                     st.success(f"✅ Welcome back, {username}!")
                     st.rerun()
-
                 else:
                     st.error("❌ Invalid credentials.")
 
@@ -219,7 +219,6 @@ if history:
             delete_history_entry(entry_id, st.session_state.user_id)
             st.session_state.code_outputs = get_all_history(st.session_state.user_id)
             st.rerun()
-
 else:
     st.sidebar.info("No history yet.")
 
@@ -229,13 +228,19 @@ if st.sidebar.button("🚪 Logout"):
             del st.session_state[key]
     st.rerun()
 
-
 # Display previous results
 st.markdown('<div style="padding-bottom: 200px;">', unsafe_allow_html=True)
 for question, answer in st.session_state.code_outputs:
     st.markdown(f"### ❓ Question: {question}")
     st.code(answer)
 st.markdown('</div>', unsafe_allow_html=True)
+
+# --- Display logo above input ---
+logo_path = "orig_1920x1080.png"
+if os.path.exists(logo_path):
+    st.markdown("<div style='text-align: center; padding-bottom: 10px;'>", unsafe_allow_html=True)
+    st.image(Image.open(logo_path), width=150)
+    st.markdown("<h3 style='text-align:center;'>ScriptBot</h3></div>", unsafe_allow_html=True)
 
 # --- Fixed input at bottom ---
 st.markdown("""
@@ -269,7 +274,6 @@ with st.form("input_form", clear_on_submit=True):
             insert_history(st.session_state.user_id, question, answer)
             st.session_state.code_outputs.insert(0, (question, answer))
             st.rerun()
-
         except Exception as e:
             st.error(f"Error: {e}")
 
