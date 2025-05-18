@@ -4,7 +4,6 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 import mysql.connector
-from mysql.connector import pooling
 import hashlib
 
 # Load environment variables
@@ -19,12 +18,6 @@ mysql_config = {
     'database': os.getenv("MYSQL_DATABASE")
 }
 
-# Setup connection pool
-db_pool = pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **mysql_config)
-
-def get_connection():
-    return db_pool.get_connection()
-
 # Initialize LLM
 llm = ChatOpenAI(openai_api_key=api_key, model_name="gpt-4o-mini", temperature=0)
 
@@ -38,12 +31,10 @@ if "username" not in st.session_state:
     st.session_state.username = None
 if "code_outputs" not in st.session_state:
     st.session_state.code_outputs = []
-if "logout_confirm" not in st.session_state:
-    st.session_state.logout_confirm = False
 
 # --- DB Setup ---
 def init_db():
-    conn = get_connection()
+    conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -68,7 +59,7 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def register_user(username, password):
-    conn = get_connection()
+    conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
     try:
         cursor.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)",
@@ -81,7 +72,7 @@ def register_user(username, password):
         conn.close()
 
 def login_user(username, password):
-    conn = get_connection()
+    conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE username=%s AND password_hash=%s",
                    (username, hash_password(password)))
@@ -90,7 +81,7 @@ def login_user(username, password):
     return user[0] if user else None
 
 def insert_history(user_id, question, answer):
-    conn = get_connection()
+    conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO history (user_id, question, answer) VALUES (%s, %s, %s)",
                    (user_id, question, answer))
@@ -98,7 +89,7 @@ def insert_history(user_id, question, answer):
     conn.close()
 
 def get_all_history(user_id):
-    conn = get_connection()
+    conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
     cursor.execute("SELECT id, question, answer FROM history WHERE user_id = %s ORDER BY id DESC", (user_id,))
     rows = cursor.fetchall()
@@ -106,7 +97,7 @@ def get_all_history(user_id):
     return rows
 
 def delete_history_entry(entry_id, user_id):
-    conn = get_connection()
+    conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM history WHERE id = %s AND user_id = %s", (entry_id, user_id))
     conn.commit()
@@ -182,6 +173,7 @@ def login_register_section():
                     st.session_state.username = username
                     st.success(f"✅ Welcome back, {username}!")
                     st.rerun()
+
                 else:
                     st.error("❌ Invalid credentials.")
 
@@ -214,60 +206,35 @@ def generate_code(question):
     prompt = base_prompt_template.format(question=question)
     return llm.predict(prompt)
 
-# Sidebar with history using expanders for each entry
+# Sidebar
 st.sidebar.title(f"🕓 History ({st.session_state.username})")
 history = get_all_history(st.session_state.user_id)
-
 if history:
     for entry_id, question, answer in history:
-        with st.sidebar.expander(f"📄 {question[:30]}..."):
-            if st.button("📥 Load", key=f"load_{entry_id}"):
-                st.session_state.code_outputs.insert(0, (question, answer))
-                st.rerun()
+        if st.sidebar.button(f"📄 {question[:30]}...", key=f"load_{entry_id}"):
+            st.session_state.code_outputs.insert(0, (question, answer))
+            st.rerun()
 
-            if st.button("🗑️ Delete", key=f"delete_{entry_id}"):
-                delete_history_entry(entry_id, st.session_state.user_id)
-                # Refresh local cache to reflect deletion
-                st.session_state.code_outputs = get_all_history(st.session_state.user_id)
-                st.rerun()
+        if st.sidebar.button("🗑️ Delete", key=f"delete_{entry_id}"):
+            delete_history_entry(entry_id, st.session_state.user_id)
+            st.session_state.code_outputs = get_all_history(st.session_state.user_id)
+            st.rerun()
+
 else:
     st.sidebar.info("No history yet.")
 
-# Logout confirmation logic
-def logout():
+if st.sidebar.button("🚪 Logout"):
     for key in ["user_id", "username", "code_outputs"]:
         if key in st.session_state:
             del st.session_state[key]
-    st.session_state.logout_confirm = False
     st.rerun()
 
-if st.sidebar.button("🚪 Logout"):
-    st.session_state.logout_confirm = True
-
-if st.session_state.logout_confirm:
-    if st.sidebar.button("Confirm Logout"):
-        logout()
-    if st.sidebar.button("Cancel"):
-        st.session_state.logout_confirm = False
 
 # Display previous results
 st.markdown('<div style="padding-bottom: 200px;">', unsafe_allow_html=True)
 for question, answer in st.session_state.code_outputs:
     st.markdown(f"### ❓ Question: {question}")
-
-    # Try to split explanation and code block if present
-    if "```" in answer:
-        parts = answer.split("```")
-        st.markdown(parts[0])
-        # If code block language specified, remove it
-        code_block = parts[1]
-        # Remove optional language declaration if present (e.g. "python\n")
-        code_lines = code_block.split("\n")
-        if code_lines[0].strip() in ["python", "py", ""]:
-            code_lines = code_lines[1:]
-        st.code("\n".join(code_lines))
-    else:
-        st.code(answer)
+    st.code(answer)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # --- Fixed input at bottom ---
@@ -298,11 +265,11 @@ with st.form("input_form", clear_on_submit=True):
         submit = st.form_submit_button("⇧")
     if submit and question:
         try:
-            with st.spinner("Generating response..."):
-                answer = generate_code(question)
+            answer = generate_code(question)
             insert_history(st.session_state.user_id, question, answer)
             st.session_state.code_outputs.insert(0, (question, answer))
             st.rerun()
+
         except Exception as e:
             st.error(f"Error: {e}")
 
