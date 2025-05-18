@@ -19,7 +19,7 @@ mysql_config = {
 }
 
 # Initialize LLM
-llm = ChatOpenAI(openai_api_key=api_key, model_name="gpt-3.5-turbo", temperature=0)
+llm = ChatOpenAI(openai_api_key=api_key, model_name="gpt-4o-mini", temperature=0)
 
 # Streamlit config
 st.set_page_config(page_title="ScriptBot", layout="wide")
