@@ -31,6 +31,8 @@ if "username" not in st.session_state:
     st.session_state.username = None
 if "code_outputs" not in st.session_state:
     st.session_state.code_outputs = []
+if "auth_tab" not in st.session_state:
+    st.session_state.auth_tab = "Login"  # Track which tab is active in auth section
 
 # --- DB Setup ---
 def init_db():
@@ -158,36 +160,39 @@ def login_register_section():
         unsafe_allow_html=True
     )
 
-    tab1, tab2 = st.tabs(["Login", "Register"])
+    tab_names = ["Login", "Register"]
+    selected_index = tab_names.index(st.session_state.auth_tab)
+    tabs = st.tabs(tab_names)
 
-    with tab1:
-        st.subheader("🔑 Login to your account")
-        with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            login_btn = st.form_submit_button("Login")
-            if login_btn:
-                user_id = login_user(username, password)
-                if user_id:
-                    st.session_state.user_id = user_id
-                    st.session_state.username = username
-                    st.success(f"✅ Welcome back, {username}!")
-                    st.rerun()
-
-                else:
-                    st.error("❌ Invalid credentials.")
-
-    with tab2:
-        st.subheader("📝 Register a new account")
-        with st.form("register_form"):
-            new_username = st.text_input("New Username", key="reg_username")
-            new_password = st.text_input("New Password", type="password", key="reg_password")
-            register_btn = st.form_submit_button("Register")
-            if register_btn:
-                if register_user(new_username, new_password):
-                    st.success("🎉 Registration successful! Please log in.")
-                else:
-                    st.error("⚠ Username already exists.")
+    with tabs[selected_index]:
+        if st.session_state.auth_tab == "Login":
+            st.subheader("🔑 Login to your account")
+            with st.form("login_form"):
+                username = st.text_input("Username")
+                password = st.text_input("Password", type="password")
+                login_btn = st.form_submit_button("Login")
+                if login_btn:
+                    user_id = login_user(username, password)
+                    if user_id:
+                        st.session_state.user_id = user_id
+                        st.session_state.username = username
+                        st.success(f"✅ Welcome back, {username}!")
+                        st.experimental_rerun()
+                    else:
+                        st.error("❌ Invalid credentials.")
+        else:
+            st.subheader("📝 Register a new account")
+            with st.form("register_form"):
+                new_username = st.text_input("New Username", key="reg_username")
+                new_password = st.text_input("New Password", type="password", key="reg_password")
+                register_btn = st.form_submit_button("Register")
+                if register_btn:
+                    if register_user(new_username, new_password):
+                        st.success("🎉 Registration successful! Please log in.")
+                        st.session_state.auth_tab = "Login"  # Switch to login tab
+                        st.experimental_rerun()
+                    else:
+                        st.error("⚠ Username already exists.")
 
 # If user not logged in, show login/register UI
 if not st.session_state.user_id:
@@ -211,15 +216,14 @@ st.sidebar.title(f"🕓 History ({st.session_state.username})")
 history = get_all_history(st.session_state.user_id)
 if history:
     for entry_id, question, answer in history:
-        if st.sidebar.button(f"📄 {question[:30]}...", key=f"load_{entry_id}"):
+        cols = st.sidebar.columns([4, 1])
+        if cols[0].button(f"📄 {question[:30]}...", key=f"load_{entry_id}"):
             st.session_state.code_outputs.insert(0, (question, answer))
-            st.rerun()
-
-        if st.sidebar.button("🗑️ Delete", key=f"delete_{entry_id}"):
+            st.experimental_rerun()
+        if cols[1].button("🗑️", key=f"delete_{entry_id}"):
             delete_history_entry(entry_id, st.session_state.user_id)
             st.session_state.code_outputs = get_all_history(st.session_state.user_id)
-            st.rerun()
-
+            st.experimental_rerun()
 else:
     st.sidebar.info("No history yet.")
 
@@ -227,8 +231,7 @@ if st.sidebar.button("🚪 Logout"):
     for key in ["user_id", "username", "code_outputs"]:
         if key in st.session_state:
             del st.session_state[key]
-    st.rerun()
-
+    st.experimental_rerun()
 
 # Display previous results
 st.markdown('<div style="padding-bottom: 200px;">', unsafe_allow_html=True)
@@ -268,8 +271,7 @@ with st.form("input_form", clear_on_submit=True):
             answer = generate_code(question)
             insert_history(st.session_state.user_id, question, answer)
             st.session_state.code_outputs.insert(0, (question, answer))
-            st.rerun()
-
+            st.experimental_rerun()
         except Exception as e:
             st.error(f"Error: {e}")
 
