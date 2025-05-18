@@ -1,12 +1,10 @@
 import os
-import subprocess
 import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 import mysql.connector
 import hashlib
-import importlib
 
 # Load environment variables
 load_dotenv()
@@ -22,33 +20,6 @@ mysql_config = {
 
 # Initialize LLM
 llm = ChatOpenAI(openai_api_key=api_key, model_name="gpt-4o-mini", temperature=0)
-
-
-def is_module_available(module_name):
-    """Check if a Python module is installed."""
-    try:
-        importlib.import_module(module_name)
-        return True
-    except ImportError:
-        return False
-
-def install_module(module_name):
-    """Install a Python module using pip."""
-    try:
-        subprocess.check_call(['pip', 'install', module_name])
-        return True
-    except subprocess.CalledProcessError:
-        return False
-
-# Check if streamlit is installed
-if not is_module_available("streamlit"):
-    st.error("Streamlit is not installed. Please install it to run this app.")
-    if install_module("streamlit"):
-        st.success("Streamlit has been successfully installed. Please rerun the app.")
-    else:
-        st.error("Failed to install Streamlit. Please install it manually using: `pip install streamlit`")
-    st.stop()  # Stop execution if streamlit is not available.
-
 
 # Streamlit config
 st.set_page_config(page_title="ScriptBot", layout="wide")
@@ -92,7 +63,7 @@ def register_user(username, password):
     cursor = conn.cursor()
     try:
         cursor.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s)",
-                        (username, hash_password(password)))
+                       (username, hash_password(password)))
         conn.commit()
         return True
     except mysql.connector.errors.IntegrityError:
@@ -104,7 +75,7 @@ def login_user(username, password):
     conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE username=%s AND password_hash=%s",
-                        (username, hash_password(password)))
+                   (username, hash_password(password)))
     user = cursor.fetchone()
     conn.close()
     return user[0] if user else None
@@ -113,7 +84,7 @@ def insert_history(user_id, question, answer):
     conn = mysql.connector.connect(**mysql_config)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO history (user_id, question, answer) VALUES (%s, %s, %s)",
-                        (user_id, question, answer))
+                   (user_id, question, answer))
     conn.commit()
     conn.close()
 
@@ -235,8 +206,6 @@ def generate_code(question):
     prompt = base_prompt_template.format(question=question)
     return llm.predict(prompt)
 
-# ---  Add Logo ---
-st.image("orig_1920x1080.jpg", width=200)  # Adjust width as needed
 # Sidebar
 st.sidebar.title(f"🕓 History ({st.session_state.username})")
 history = get_all_history(st.session_state.user_id)
