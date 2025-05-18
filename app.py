@@ -105,7 +105,7 @@ def delete_history_entry(entry_id, user_id):
 
 init_db()
 
-# --- Authentication Section ---
+# --- Authentication Section with tabs and styled welcome message ---
 def login_register_section():
     st.markdown("""
         <style>
@@ -173,6 +173,7 @@ def login_register_section():
                     st.session_state.username = username
                     st.success(f"✅ Welcome back, {username}!")
                     st.rerun()
+
                 else:
                     st.error("❌ Invalid credentials.")
 
@@ -188,6 +189,7 @@ def login_register_section():
                 else:
                     st.error("⚠ Username already exists.")
 
+# If user not logged in, show login/register UI
 if not st.session_state.user_id:
     login_register_section()
     st.stop()
@@ -212,10 +214,12 @@ if history:
         if st.sidebar.button(f"📄 {question[:30]}...", key=f"load_{entry_id}"):
             st.session_state.code_outputs.insert(0, (question, answer))
             st.rerun()
+
         if st.sidebar.button("🗑️ Delete", key=f"delete_{entry_id}"):
             delete_history_entry(entry_id, st.session_state.user_id)
             st.session_state.code_outputs = get_all_history(st.session_state.user_id)
             st.rerun()
+
 else:
     st.sidebar.info("No history yet.")
 
@@ -225,20 +229,13 @@ if st.sidebar.button("🚪 Logout"):
             del st.session_state[key]
     st.rerun()
 
+
 # Display previous results
 st.markdown('<div style="padding-bottom: 200px;">', unsafe_allow_html=True)
 for question, answer in st.session_state.code_outputs:
     st.markdown(f"### ❓ Question: {question}")
     st.code(answer)
 st.markdown('</div>', unsafe_allow_html=True)
-
-# --- Add logo and name above input ---
-st.markdown("""
-    <div style="position: fixed; bottom: 130px; left: 20px; z-index: 999; display: flex; align-items: center; gap: 10px; background-color: white; padding: 10px 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Script-font-icon.svg/1024px-Script-font-icon.svg.png" alt="Logo" style="height: 40px;">
-        <h3 style="margin: 0; font-weight: 600;">ScriptBot</h3>
-    </div>
-""", unsafe_allow_html=True)
 
 # --- Fixed input at bottom ---
 st.markdown("""
@@ -268,11 +265,11 @@ with st.form("input_form", clear_on_submit=True):
         submit = st.form_submit_button("⇧")
     if submit and question:
         try:
-            with st.spinner("Generating code..."):
-                answer = generate_code(question)
-                insert_history(st.session_state.user_id, question, answer)
-                st.session_state.code_outputs.insert(0, (question, answer))
-                st.rerun()
+            answer = generate_code(question)
+            insert_history(st.session_state.user_id, question, answer)
+            st.session_state.code_outputs.insert(0, (question, answer))
+            st.rerun()
+
         except Exception as e:
             st.error(f"Error: {e}")
 
