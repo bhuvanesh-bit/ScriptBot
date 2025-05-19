@@ -252,7 +252,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 with st.form("input_form", clear_on_submit=True):
-    col1, col2 = st.columns([1, 1])
+    col1, col2 = st.columns([1, 4])
     with col1:
         question = st.text_area("Ask a coding question", label_visibility="collapsed", height=80)
     with col2:
