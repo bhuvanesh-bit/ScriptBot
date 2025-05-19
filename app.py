@@ -266,7 +266,8 @@ with st.form("input_form", clear_on_submit=True):
     with col1:
         question = st.text_area("Ask a coding question", label_visibility="collapsed", height=80)
     with col2:
-        submit = st.form_submit_button("https://techknowprime.com/wp-content/uploads/2022/12/Chonky-Submit-Button.webp")
+        submit = st.form_submit_button("🚀 Submit")
+
     if submit and question:
         try:
             answer = generate_code(question)
