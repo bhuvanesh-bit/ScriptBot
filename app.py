@@ -245,14 +245,14 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown("""
     <style>
     .fixed-input textarea {
-        width: 60% !important;
+        width: 100% !important;
     }
     </style>
     <div class='fixed-input'>
 """, unsafe_allow_html=True)
 
 with st.form("input_form", clear_on_submit=True):
-    col1, col2 = st.columns([5, 1])
+    col1, col2 = st.columns([4, 1])
     with col1:
         question = st.text_area("Ask a coding question", label_visibility="collapsed", height=80)
     with col2:
