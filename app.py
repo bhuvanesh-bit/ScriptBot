@@ -24,6 +24,9 @@ llm = ChatOpenAI(openai_api_key=api_key, model_name="gpt-4o-mini", temperature=0
 # Streamlit config
 st.set_page_config(page_title="ScriptBot", layout="wide")
 
+# Top header
+st.markdown("<h1 style='text-align: center;'>ScriptBot 🤖</h1>", unsafe_allow_html=True)
+
 # Initialize session states
 if "user_id" not in st.session_state:
     st.session_state.user_id = None
