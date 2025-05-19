@@ -118,7 +118,7 @@ def login_register_section():
             margin-right: 0.3rem;
         }
         .welcome-container {
-            max-width: 50px;
+            max-width: 500px;
             margin: 0;
             padding: 1rem 0 1rem 1rem;
             background-color: #1e1e1e;
