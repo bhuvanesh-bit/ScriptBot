@@ -155,7 +155,7 @@ def login_register_section():
 
     st.markdown(
         '<div class="welcome-container">'
-        '<span class="title-icon">🔒</span>'
+        '<span class="title-icon">🤖</span>'
         'Welcome to ScriptBot'
         '</div>',
         unsafe_allow_html=True
