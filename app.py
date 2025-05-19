@@ -271,7 +271,7 @@ with st.form("input_form", clear_on_submit=True):
         try:
             answer = generate_code(question)
             insert_history(st.session_state.user_id, question, answer)
-            st.session_state.code_outputs.append((question, answer)))
+            st.session_state.code_outputs.append(question, answer))
             st.rerun()
 
         except Exception as e:
