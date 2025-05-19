@@ -266,7 +266,7 @@ with st.form("input_form", clear_on_submit=True):
     with col1:
         question = st.text_area("Ask a coding question", label_visibility="collapsed", height=80)
     with col2:
-        submit = st.form_submit_button("🚀 Submit")
+        submit = st.form_submit_button("➤")
 
     if submit and question:
         try:
