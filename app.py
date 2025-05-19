@@ -244,16 +244,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # --- Fixed input at bottom ---
 st.markdown("""
     <style>
-    .fixed-input {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 70%;
-        background-color: white;
-        padding: 1rem;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        z-index: 999;
-    }
+   
     .fixed-input textarea {
         width: 100% !important;
     }
