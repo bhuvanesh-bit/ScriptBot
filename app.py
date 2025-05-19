@@ -195,7 +195,7 @@ if not st.session_state.user_id:
     st.stop()
 
 # Top header
-st.markdown("<h1 style='text-align: center; font-weight: bold;'>ScriptBot 🤖</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; font-weight: bold;'>SCRIPTBOT🤖</h1>", unsafe_allow_html=True)
 
 # Prompt templates
 base_prompt_template = PromptTemplate(
