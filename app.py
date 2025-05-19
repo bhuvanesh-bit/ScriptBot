@@ -254,7 +254,7 @@ st.markdown("""
 with st.form("input_form", clear_on_submit=True):
     col1, col2 = st.columns([4, 1])
     with col1:
-        question = st.text_area("Ask a coding question", label_visibility="collapsed", height=50)
+        question = st.text_area("Ask a coding question", label_visibility="collapsed", height=70)
     with col2:
         submit = st.form_submit_button("➤")
 
