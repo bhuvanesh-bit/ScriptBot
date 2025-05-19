@@ -126,7 +126,7 @@ def login_register_section():
             color: white;
             text-align: left;
             font-size: 1.3rem;
-            font-weight: 600;
+            font-weight: 60;
             display: flex;
             align-items: center;
         }
