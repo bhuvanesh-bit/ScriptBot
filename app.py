@@ -266,14 +266,37 @@ with st.form("input_form", clear_on_submit=True):
     with col1:
         question = st.text_area("Ask a coding question", label_visibility="collapsed", height=80)
     with col2:
-        submit = st.form_submit_button("https://techknowprime.com/wp-content/uploads/2022/12/Chonky-Submit-Button.webp")
-    if submit and question:
+        st.markdown("""
+            <style>
+            .arrow-btn {
+                background-color: #000;
+                color: #fff;
+                border: none;
+                border-radius: 50%;
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                margin-top: 0.5rem;
+            }
+            .arrow-btn:hover {
+                background-color: #333;
+            }
+            </style>
+            <button type="submit" class="arrow-btn">➤</button>
+        """, unsafe_allow_html=True)
+
+    submitted = st.form_submit_button(disabled=True)  # Hidden, just to enable form handling
+    if submitted and question:
         try:
             answer = generate_code(question)
             insert_history(st.session_state.user_id, question, answer)
-            st.session_state.code_outputs.append((question, answer))
+            st.session_state.code_outputs.insert(0, (question, answer))
             st.rerun()
-
         except Exception as e:
             st.error(f"Error: {e}")
 
